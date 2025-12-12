@@ -135,6 +135,10 @@
             backdrop-filter: blur(4px);
         }
         .mode-btn:active { transform: scale(0.9); background: #d4af37; color: #000; }
+
+        /* 音乐播放状态动画 */
+        .music-playing { animation: music-spin 4s linear infinite; border-color: #00ff00 !important; color: #00ff00 !important; box-shadow: 0 0 15px #00ff00 !important; }
+        @keyframes music-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Webcam feedback */
         #webcam-wrapper {
@@ -183,6 +187,10 @@
     </script>
 </head>
 <body>
+    
+    <audio id="bgm" loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="loader">
         <div class="spinner"></div>
@@ -194,7 +202,7 @@
     <div id="canvas-container"></div>
 
     <div id="ui-layer">
-        <h1>Merry Christmas 贞贞卷卷宝宝</h1>
+        <h1>Merry Christmas <br> 贞贞卷卷宝宝</h1>
         
         <!-- <div class="controls-wrapper">
             <div class="btn-group">
@@ -224,12 +232,12 @@
             <div class="mode-btn" onclick="setMode('SCATTER')" title="Scatter Mode">✨</div>
             <div class="mode-btn" onclick="setMode('FOCUS_RANDOM')" title="Focus Mode">🔍</div>
             
-            <div class="mode-btn" onclick="toggleMusic()" id="music-btn" title="Music">🎵</div>
+            <div class="mode-btn" id="music-btn" title="Toggle Music">🎵</div>
         </div>
         
-        <div id="music-panel" style="display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); z-index: 1001; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 8px; border: 1px solid #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);">
+        <!-- <div id="music-panel" style="display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); z-index: 1001; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 8px; border: 1px solid #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);">
             <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=22509038&auto=1&height=66"></iframe>
-        </div>
+        </div> -->
     </div>
 
     <div id="webcam-wrapper">
@@ -302,6 +310,37 @@
         const debugInfo = document.getElementById('debug-info');
         const camBtn = document.getElementById('cam-btn');
         let isCameraRunning = false;
+
+        // music controller
+        const bgm = document.getElementById('bgm');
+        const musicBtn = document.getElementById('music-btn');
+        let isMusicPlaying = false;
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                bgm.pause();
+                musicBtn.classList.remove('music-playing');
+                musicBtn.innerText = "🎵";
+                isMusicPlaying = false;
+            } else {
+                bgm.play().then(() => {
+                    musicBtn.classList.add('music-playing');
+                    musicBtn.innerText = "⏸";
+                    isMusicPlaying = true;
+                }).catch(e => console.log("等待交互"));
+            }
+        }
+        
+        musicBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMusic(); });
+
+        // 智能自动播放：用户第一次点击屏幕任何地方时触发
+        function smartAutoPlay() {
+            if(!isMusicPlaying) toggleMusic();
+            document.body.removeEventListener('click', smartAutoPlay);
+            document.body.removeEventListener('touchstart', smartAutoPlay);
+        }
+        document.body.addEventListener('click', smartAutoPlay);
+        document.body.addEventListener('touchstart', smartAutoPlay);
 
 //   - @Project: Grand Luxury Tree - Christmas Edition (Touch & Gesture)
 //   - @Author: wp/electronicminer qq:2013248845
